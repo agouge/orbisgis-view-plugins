@@ -12,6 +12,7 @@ public abstract class GroovyConsoleActions implements ActionFactoryService<Groov
     public static final String A_OPEN = "M_OPEN";
     public static final String A_SAVE = "M_SAVE";
     public static final String A_SEARCH = "M_SEARCH";
+    public static final String A_TOGGLESYNTAX = "M_TOGGLESYNTAX";
     public static final String A_COMMENT = "M_COMMENT";
     public static final String A_BLOCKCOMMENT = "M_BLOCKCOMMENT";
 }

@@ -29,21 +29,6 @@
 package org.orbisgis.groovy;
 
 import groovy.lang.GroovyShell;
-import java.awt.BorderLayout;
-import java.awt.event.ActionListener;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.beans.EventHandler;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import javax.sql.DataSource;
-import javax.swing.*;
-import javax.swing.event.CaretListener;
-import javax.swing.event.DocumentListener;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -77,6 +62,22 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 
+import javax.sql.DataSource;
+import javax.swing.*;
+import javax.swing.event.CaretListener;
+import javax.swing.event.DocumentListener;
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.beans.EventHandler;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Create the groovy console panel
  *
@@ -100,6 +101,7 @@ public class GroovyConsolePanel extends JPanel implements EditorDockable {
     private DefaultAction clearAction;
     private DefaultAction saveAction;
     private DefaultAction findAction;
+    private DefaultAction toggleSyntaxAction;
     private DefaultAction commentAction;
     private DefaultAction blockCommentAction;
     private FindReplaceDialog findReplaceDialog;
@@ -207,7 +209,7 @@ public class GroovyConsolePanel extends JPanel implements EditorDockable {
     private void initActions() {
         //Execute action
         executeAction = new DefaultAction(GroovyConsoleActions.A_EXECUTE, I18N.tr("Execute"),
-                I18N.tr("Execute the groovy script"),
+                I18N.tr("Execute the Groovy script"),
                 OrbisGISIcon.getIcon("execute"),
                 EventHandler.create(ActionListener.class, this, "onExecute"),
                 KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK));
@@ -237,14 +239,24 @@ public class GroovyConsolePanel extends JPanel implements EditorDockable {
                 EventHandler.create(ActionListener.class, this, "onSaveFile"),
                 KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK));
         actions.addAction(saveAction);
+
         //Find action
         findAction = new DefaultAction(GroovyConsoleActions.A_SEARCH,
-                I18N.tr("Search.."),
+                I18N.tr("Search."),
                 I18N.tr("Search text in the document"),
                 OrbisGISIcon.getIcon("find"),
                 EventHandler.create(ActionListener.class, this, "openFindReplaceDialog"),
                 KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK)).addStroke(KeyStroke.getKeyStroke(KeyEvent.VK_H, InputEvent.CTRL_DOWN_MASK));
         actions.addAction(findAction);
+
+        // Toggle syntax highlighting between Groovy and SQL
+        toggleSyntaxAction = new DefaultAction(GroovyConsoleActions.A_TOGGLESYNTAX,
+                I18N.tr("Toggle syntax"),
+                I18N.tr("Toggle syntax highlighting between Groovy and SQL"),
+                OrbisGISIcon.getIcon("contrast"),
+                EventHandler.create(ActionListener.class, this, "toggleSyntaxHighlighting"),
+                KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.CTRL_DOWN_MASK));
+        actions.addAction(toggleSyntaxAction);
 
         // Comment/Uncomment
         commentAction = new DefaultAction(GroovyConsoleActions.A_COMMENT,
@@ -452,6 +464,18 @@ public class GroovyConsolePanel extends JPanel implements EditorDockable {
         }
         findReplaceDialog.setAlwaysOnTop(true);
         findReplaceDialog.setVisible(true);
+    }
+
+    /**
+     * Open one instanceof the find replace dialog
+     */
+    public void toggleSyntaxHighlighting() {
+        final String previous = scriptPanel.getSyntaxEditingStyle();
+        if (previous.equals(RSyntaxTextArea.SYNTAX_STYLE_GROOVY)) {
+            scriptPanel.setSyntaxEditingStyle(RSyntaxTextArea.SYNTAX_STYLE_SQL);
+        } else if (previous.equals(RSyntaxTextArea.SYNTAX_STYLE_SQL)) {
+            scriptPanel.setSyntaxEditingStyle(RSyntaxTextArea.SYNTAX_STYLE_GROOVY);
+        }
     }
 
     /**
